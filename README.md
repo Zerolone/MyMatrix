@@ -21,6 +21,8 @@ esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after 
 ![设置页面](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/01.jpg)
 
 
+![设置页面](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/02.jpg)
+
 -------
 git add .
 git commit -m "2025-1-20"
