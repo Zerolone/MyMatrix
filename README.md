@@ -11,4 +11,18 @@ com5
 esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after hard_reset write_flash 0x200000 littlefs.bin
 esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after hard_reset write_flash 0x0      firmware.bin
 
+配网页面支持各种系统
+配网页面不支持ios系统
+
+
+![配网页面](https://raw.githubusercontent.com/Zerolone/ESP8266Tester/main/screenshot/0.jpg)
+
+
+![设置页面](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/01.jpg)
+
+
+-------
+git add .
+git commit -m "2025-1-20"
+git push
 
