@@ -1,0 +1,489 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_Neomatrix.h>
+
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <ESPAsyncWebServer.h>
+#include <ESPAsyncTCP.h>
+#include "LittleFS.h"
+#include <ESP8266httpUpdate.h>
+
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <Ticker.h>
+
+//室内温度
+#include <DHT.h>
+
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
+//变量
+#include <common.h>
+
+//函数部分
+#include <func.h>
+//////////////////////////
+
+//更新所有数据
+void updateAll(){
+  updateTime();
+  updateWeather();
+  //updateAQI();
+  updateBili();
+}
+
+//切换显示效果
+void swithShow(){
+    matrix->clear();
+
+    //时间、日期
+    if(intTimer <= 100 and intTimer % 10 == 0){
+      //日期
+      displayImage(cald);
+      displayImage(cald,1);
+      
+      if(strDay.toInt() < 10) strDay  = "0" + strDay;
+
+      isClear = false;
+      zPrint(strDay, cBlack, 1, 2);
+
+      //时间呼吸效果
+      intTimeStep++;
+      strTmp = " ";
+      if(intTimeStep > 1){
+        intTimeStep = 0;
+        strTmp = ":";
+      }
+
+      strTmp  = strHour + strTmp + strMin;
+
+      //星期
+      for(int i = 1; i <= 7;  i++){
+        matrix->drawPixel(i*3 + 7, 7, cWhite);
+        matrix->drawPixel(i*3 + 8, 7, cWhite);
+        
+        if(i == strWday.toInt()){
+          matrix->drawPixel(i*3 + 7, 7, cRed);
+          matrix->drawPixel(i*3 + 8, 7, cRed);
+        }
+      }
+
+      isClear = false;
+
+      //显示时间
+      zPrint(strTmp,  cWhite, 12, 1);matrix->show();
+
+      intCurr = 1;
+    }
+
+    //关注数
+    //bili intCurr = 2 
+    if(intTimer <= 200 and intTimer > 100  and intTimer % 5 == 0){
+      strTmp = " " + biliNum;
+
+      intTimeStep++;
+      if(intTimeStep > 1){
+        intTimeStep = 0;
+      }
+      displayImage(bilibili[intTimeStep]);
+      
+      isClear=false;
+
+      //数字下来两格
+      zPrint(strTmp, cGreen, 7, 2);
+
+      matrix->show();
+
+      intCurr = 2;
+    }
+
+    //天气 intCurr = 3
+    if(intTimer <= 300 and intTimer > 200 ){
+      if(intCurr != 3) intWea = 0;
+      showWeather();
+
+      intCurr = 3;
+    }
+
+    //再开循环
+    intTimer++;
+    if(intTimer > 300) intTimer = 0;
+}
+
+//-------------------------------------
+void setup() {
+  Serial.begin(intSerial);
+
+  //初始化littleFS
+  initFS();
+
+  //---------------------------
+  //从LittleFS读取内容 系统配置
+  strTmp  = readFile(LittleFS, sysPath);
+
+  unsigned int count = 1;
+  unsigned int i = 0;
+  for (i = 0; i < strTmp.length(); i++) {
+      if (strTmp.charAt(i) == '|') {
+          count++; // 遇到分隔符，计数器递增
+      }
+  }  
+  
+  char charArray[strTmp.length() + 1];
+  strTmp.toCharArray(charArray, sizeof(charArray));
+
+  // 使用strtok函数将字符串按照 | 分割，并存储到变量中
+  char* token = strtok(charArray, "|");
+  char* tokens[count];
+  
+  i = 0;
+  while (token != NULL && i < count) {
+      tokens[i++] = token;
+      token = strtok(NULL, "|");
+  }
+
+  ssid    = tokens[0];
+  pass    = tokens[1];
+  ip      = tokens[2];
+  gateway = tokens[3];
+  ota     = tokens[4];
+  otahost = tokens[5];
+  checkid = tokens[6];
+
+  sinfo("ssid=",    ssid);
+  sinfo("pass=",    pass);
+  sinfo("ip=",      ip);
+  sinfo("gateway=", gateway);
+  sinfo("ota=",     ota);
+  sinfo("otahost=", otahost);
+  sinfo("checkid=", checkid);
+
+  //---------------------------
+  //从LittleFS读取内容 软件配置
+  strTmp  = readFile(LittleFS, softPath);
+
+  count = 1;
+  for (i = 0; i < strTmp.length(); i++) {
+    if (strTmp.charAt(i) == '|') {
+      count++; // 遇到分隔符，计数器递增
+    }
+  }  
+  
+  strTmp.toCharArray(charArray, sizeof(charArray));
+
+  // 使用strtok函数将字符串按照 | 分割，并存储到变量中
+  token = strtok(charArray, "|");
+  
+  i = 0;
+  while (token != NULL && i < count) {
+    tokens[i++] = token;
+    token = strtok(NULL, "|");
+  }
+
+  intBright = atoi(tokens[0]);
+  mType     = atoi(tokens[1]);
+  biliID    = tokens[2];
+  wUserKey  = tokens[3];
+  wLocation = tokens[4];
+
+  sinfo("intBright=", String(intBright));
+  sinfo("mType=",     String(mType));
+  sinfo("biliID=",    biliID);
+  sinfo("wUserKey=",  wUserKey);
+  sinfo("wLocation=", wLocation);  
+
+  //默认类型
+  if(mType < 1) mType = 1;
+
+  //默认亮度
+  if(intBright < 1) intBright = 1;
+
+  //初始化
+  if(mType == 1) matrix = new Adafruit_NeoMatrix(8, 8, 4, 1, lightPIN, NEO_MATRIX_TOP     + NEO_MATRIX_LEFT  + NEO_MATRIX_ROWS    + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);
+  if(mType == 2) matrix = new Adafruit_NeoMatrix(32, 8,      lightPIN, NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);
+
+  matrix->begin();
+  matrix->setTextWrap(false);
+  matrix->setBrightness(intBright);
+
+  //测试用，平时注释掉
+  if(isTest == 1){
+    /*
+    //动画滚动
+    for(int i=0;i<32;i++){
+      displayImage(coin, i, 0);
+      delay(100);
+    }
+    */
+
+    //zPrint("|小|面|熊|来|打|侍|魂"); matrix->show();
+
+  //zPrint("123456789");
+    //X Y Width Height
+
+
+  /**
+  //日期
+  int i=1;
+  while(true){
+    matrix->clear();
+    
+    matrix->fillRect(0, 0, 9, 2, cRed);
+    matrix->fillRect(0, 2, 9, 6, cWhite);
+
+    isClear = false;
+    strDay  = String(i);
+    if(i<10) strDay  = "0" + strDay;
+    zPrint(strDay, cBlack, 1, 2);
+    matrix->show();
+
+    i++;
+    if(i > 99) i=1;
+
+    delay(500);
+  }
+  /**/
+
+  /**超人部分
+   int i = 32;
+   int j = 0;
+   while(true){
+    displayImage(s[j], 0, 0); 
+    //isClear = false; 
+    //zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); 
+    matrix->show();
+    delay(100);
+    
+    
+    //displayImage(s2, i, 0); isClear = false; zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); matrix->show();delay(50);
+    //displayImage(s3, i, 0); isClear = false; zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); matrix->show();delay(50);
+    //displayImage(s4, i, 0); isClear = false; zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); matrix->show();delay(50);
+    //displayImage(s5, i, 0); isClear = false; zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); matrix->show();delay(50);
+    //displayImage(s6, i, 0); isClear = false; zPrint("|小|面|熊|来|打|侍|魂", cYan, i+8); matrix->show();delay(50);
+  
+    j++;  if(j > 5) j = 0;
+    i--;  if(i < -63) i = 32;
+   }
+   /**/
+
+    // 定义两个字符数组
+    /*
+    char str1[] = "11";
+    char str2[] = ":";
+    char str3[] = "30";
+
+    // 使用strcat()函数将str2拼接到str1后面
+    strcat(str1, str2, str3);
+    */
+
+
+
+  }else{
+    zPrint("|启|动|中|…");  //zPrint("BOOTING");
+    matrix->show();
+    delay(200);
+
+    //启用webserver
+    server.serveStatic("/", LittleFS, "/");
+
+    //搜索网络
+    sinfo("Search Wifi");
+    zPrint("|搜|索|网|络", cGreen);matrix->show();
+    ///////////////
+    if(initWiFi()) {
+      server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/index.html", "text/html", false, processor);
+      });
+
+      // 更新fs
+      server.on("/autofs", HTTP_GET, [](AsyncWebServerRequest *request) {
+        sinfo("begin ota fs:", OTAFSURL);
+
+        ota = "2";
+        writeFile(LittleFS, "sys");
+        
+        ESP.restart();
+      });
+      
+      // 重启
+      server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
+        ESP.restart();
+      });
+      
+      // 重置
+      server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+        ssid = "0";
+        writeFile(LittleFS, "sys");
+        ESP.restart();      
+      });
+
+      //修改设置
+      server.on("/checkid", HTTP_POST, [](AsyncWebServerRequest *request){
+        // 获取提交表单的内容
+        if (request->hasArg("wUserKey"))  wUserKey  = request->arg("wUserKey");
+        if (request->hasArg("wLocation")) wLocation = request->arg("wLocation");
+        if (request->hasArg("biliID"))    biliID    = request->arg("biliID");
+        if (request->hasArg("intBright")) intBright = request->arg("intBright").toInt();
+        if (request->hasArg("mType"))     mType     = request->arg("mType").toInt();
+        
+        sinfo("wUserKey: ",  wUserKey);
+        sinfo("wLocation: ", wLocation);
+        sinfo("biliID: ",    biliID);
+        sinfo("mType: ",     String(mType));
+        sinfo("intBright: ", String(intBright));
+
+        writeFile(LittleFS, "soft");
+
+        request->send(200, "text/html",  "<script>alert('点击重启后，看看是否生效。')</script>");
+        //request->send(LittleFS, "/index.html", "text/html", false, processor);
+      });
+
+      server.on("/otahost", HTTP_POST, [](AsyncWebServerRequest *request){
+        // 获取提交表单的内容
+        if (request->hasArg("otahost")) {
+          otahost = request->arg("otahost");
+          writeFile(LittleFS, "sys");
+        }
+    
+        request->send(200, "text/html",  "<script>alert('修改OTA地址完毕，可以点击重启之后，看看是否生效。')</script>");
+        //request->send(LittleFS, "/index.html", "text/html", false, processor);
+      });    
+      
+      server.begin();
+      canTest = 1;
+
+      ///////////
+      // 初始化OTA
+      
+      if(ota == "1") updateOTA();
+      if(ota == "2") updateOTAFS();
+
+      if(ota == "1" || ota == "2"){
+        ota = 0;
+        writeFile(LittleFS, "sys");
+        ESP.restart();
+      }
+      
+      sinfo(BOARD, VERSION);
+
+      /////////////
+      //搜索到
+      zPrint("|连|上|无|线", cYan);matrix->show();
+
+      delay(500);
+      for (int i = 32; i >= -64; i--) {
+        sinfo("i=", String(i));
+        zPrint(ip, cYan, i+8); matrix->show();delay(50);
+      }
+      delay(500);
+
+      sinfo("Search Wifi Succ");
+
+      //更新所有后， 加一个每秒的定时器
+      updateAll();
+      timer.attach(.1, swithShow);
+
+      delay(200);
+      zPrint("|开|始|运|行", cGreen);matrix->show();
+      
+    } else {
+      sinfo("Setting AP (Access Point)");
+      zPrint("AP|模|式", cYan);matrix->show();
+      
+      //ap名
+      strTmp = "ZJY-" + String(ESP.getChipId());
+      WiFi.softAP(strTmp, "123456");
+
+      delay(1000);
+      zPrint("1921684.1", cRed);matrix->show();
+
+      server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(LittleFS, "/wifimanager.html", "text/html");
+      });
+
+      //直控
+      server.on("/c", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/index.html", "text/html", false, processor);
+      });    
+      
+      server.serveStatic("/", LittleFS, "/");
+      
+      //POST
+      server.on("/", HTTP_POST, [](AsyncWebServerRequest *request){
+        // 获取提交表单的内容
+        if (request->hasArg("ssid"))    ssid    = request->arg("ssid");
+        if (request->hasArg("pass"))    pass    = request->arg("pass");
+        if (request->hasArg("ip"))      ip      = request->arg("ip");
+        if (request->hasArg("gateway")) gateway = request->arg("gateway");
+        if (request->hasArg("checkid")) checkid = request->arg("checkid");
+        
+        writeFile(LittleFS, "sys");
+
+        request->send(200, "text/html",  "<html><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/><body><h1>写入完毕，重启中，修改后的IP为：<a href='http://"+ip+"'>"+ip+" 点击直达</a></h1></body></html>");
+
+        //重启标志， 等loop去执行
+        restart = true;
+      });
+
+      server.begin();
+    }
+  }
+}
+
+void loop() {
+  //非测试模式则执行循环
+  if(isTest == 0){
+    //重启守护
+    if (restart){
+      delay(5000);
+      ESP.restart();
+    }
+    
+    if(canTest==1){
+      //Serial.println("runing version 1.0.0");
+      delay(1000);
+
+      intLoop++;
+      //时间可以多获取
+      if(intLoop % 5 == 0) {
+        updateTime();
+      }
+
+      //其他的10分钟更新一下
+      if(intLoop > 10 * 60){
+        updateAll();
+        intLoop = 0;
+      }
+
+    }
+
+    if (Serial.available() > 0) { // 检查串口是否有数据可读
+      String inputString = ""; // 创建一个空字符串来存储接收到的数据
+
+      while (Serial.available() > 0) {
+        char incomingChar = Serial.read(); // 读取串口中的字符
+        inputString += incomingChar; // 将字符添加到字符串末尾
+        delay(2); // 稍作延迟
+      }
+
+      Serial.print("接收到的数据为: ");
+      Serial.println(inputString); // 输出接收到的字符串
+
+      /**
+      matrix->clear();
+      zPrintSingle(inputString, cBlue, 0);
+      matrix->show();      
+      /**/
+
+      for (unsigned int i = 32; i < -63; i--) { 
+        zPrint(inputString, cYan, i+8); matrix->show();delay(50);
+      }
+
+    }
+
+    //zPrint("10 10", cBlue, 0);matrix->show();delay(500);
+  }
+}

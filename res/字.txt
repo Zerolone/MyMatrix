@@ -1,0 +1,116 @@
+  /*来打侍魂*
+  matrix->clear();
+  displayChineseCharacter(chinese_characters[0], 0,  colors[0]);
+  displayChineseCharacter(chinese_characters[1], 8,  colors[1]);
+  displayChineseCharacter(chinese_characters[2], 16, colors[2]);
+  displayChineseCharacter(chinese_characters[3], 24, colors[3]);
+
+  matrix->show();
+
+  
+  /**
+  matrix->fillScreen(0);  // 清空屏幕
+  matrix->clear();
+  matrix->setFont(&TomThumb);
+  // 在指定位置显示字符 "F"
+  matrix->setCursor(1, 0);
+  matrix->print(F("ABCDEFGHIJK"));
+  matrix->show();
+  delay(1000);
+
+  matrix->fillScreen(0);  // 清空屏幕
+  matrix->clear();
+  matrix->setFont();
+  matrix->setCursor(1, 0);
+  matrix->print("DEF");
+  matrix->show();
+  delay(1000);
+  */
+
+  /*
+  滚动效果
+  https://cyaninfinite.com/scrolling-text-with-flexible-32x8-rgb-led-matrix/
+  *
+  matrix->fillScreen(0);    //Turn off all the LEDs
+  matrix->setCursor(x, 0);
+  matrix->print("very well !");
+
+  if( --x < -60 ) {
+    x = matrix->width();
+
+    if(++pass >= 18) pass = 0;
+    matrix->setTextColor(colors[pass]);
+  }
+  matrix->show();
+  delay(60);
+  */
+
+
+
+
+  /**
+  中文滚动效果
+  https://cyaninfinite.com/scrolling-text-with-flexible-32x8-rgb-led-matrix/
+  *
+  matrix->fillScreen(0);    //Turn off all the LEDs
+  matrix->setCursor(x, 0);
+
+  displayChineseCharacter(chinese_characters[0], 0+x,  colors[0]);
+  displayChineseCharacter(chinese_characters[1], 8+x,  colors[1]);
+  displayChineseCharacter(chinese_characters[2], 16+x, colors[2]);
+  displayChineseCharacter(chinese_characters[3], 24+x, colors[3]);  
+
+  if( --x < -60 ) {
+    x = matrix->width();
+
+    if(++pass >= 18) pass = 0;
+    matrix->setTextColor(colors[pass]);
+  }
+  matrix->show();
+  delay(30);
+  **/
+
+  /**
+  //字符滚动显示
+  for(int i=32; i>=-260; i--){
+    matrix->fillScreen(0);    //Turn off all the LEDs
+    zPrint("lmnopqrstuvwxyz0123456789", cRed, i);
+    //zPrint("ABCDEFGHIJKLMNOPQRSTUVWXYZ", cRed, i);
+    matrix->show();
+    delay(30);  
+  }
+
+  delay(5000);
+  **/
+
+  //中文字符滚动
+
+
+  
+
+  /*
+  zPrintSingle("侍");
+  zPrintSingle("X");
+  zPrintSingle("w");
+  zPrintSingle("W");
+  */
+
+  //zPrintX("B|来|打OOTING");
+  //zPrintSingle("来");
+  //zPrintSingle("打");
+  //zPrintSingle("侍");
+  //zPrintSingle("魂");
+
+  /**
+  for(int i=32; i>=-260; i--){
+    matrix->fillScreen(0);    //Turn off all the LEDs
+    zPrint("A|我|来B|打C|侍D|魂E1234567", cRed, i);
+    //zPrint("ABCDEFGHIJKLMNOPQRSTUVWXYZ", cRed, i);
+    matrix->show();
+    delay(60);  
+  }
+  */
+  //////////////
+
+  //zPrint("A|我|来B|打C|侍D|魂E1234567", cBlue);
+  //matrix->show();

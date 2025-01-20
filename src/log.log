@@ -1,0 +1,39 @@
+
+
+
+
+2025年1月19日14:49:13
+放弃：生成字库
+1、在WSL下，转换字体为bdf
+apt install libfreetype6 libfreetype6-dev
+apt install autoconf automake
+
+查看安装
+dpkg -l | grep freetype
+
+进入otf2dbf目录
+make
+
+./otf2bdf -o ChillBitmap7x.bdf ChillBitmap7x.ttf
+
+2、bdfconv 目录，可以在windows下
+bdfconv -v -f 1 -m "32-127, 0x4e00-0x9fa5" ChillBitmap7x.bdf -o ChillBitmap7x.c -n ChillBitmap7x
+./bdfconv -v -f 1 -m "32-127, 0x4e00-0x9fa5" ChillBitmap7x.bdf -o ChillBitmap7x.c -n ChillBitmap7x
+
+bdfconv_2_22.exe -v -f 1 -m "32-127, 0x4e00-0x9fa5" ChillBitmap7x.bdf -o ChillBitmap7x.c -n ChillBitmap7x
+
+
+bdfconv -f 1 -M G:\111\u8g2\tools\font\build\chinese2.map -n ChillBitmap7x -o ChillBitmap7x.c ChillBitmap7x.bdf
+
+
+2025年1月18日13:49:38
+显示中文的话，用“|中”的方式，不然会出现乱码
+
+网页端改成用websocket方式， 目前ios无法方便的使用， 只能通过API TEST方式来用
+
+Win10、Android使用均正常
+
+
+2024年4月5日22:48:24
+处理掉所有warning
+

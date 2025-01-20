@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>2.0.3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+  </head>
+  <body>
+    <div class="topnav">
+      <h1 onclick="showOTA()">网页配置 %BOARD%</h1>
+    </div>
+    <div class="content">
+      <div class="card-grid">
+        <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> 各项设置</p>
+          <form action="/checkid" method="POST"  target="frmota">
+            <p>
+              <div style="text-align: right;">灯珠类型<input type="text" id ="mType"      name="mType"    value="%mType%"></div>
+              <div style="text-align: right;">目前有1、2 两种 </div>
+              <div style="text-align: right;">灯珠亮度<input type="text" id ="intBright" name="intBright" value="%intBright%"></div>
+              <div style="text-align: right;">和风天气API私钥<input type="text" id ="wUserKey"  name="wUserKey"  value="%wUserKey%"></div>
+              <div style="text-align: right;">https://dev.qweather.com/docs/start/ </div>
+              <div style="text-align: right;">和风天气城市代码<input type="text" id ="wLocation" name="wLocation" value="%wLocation%"></div>
+              <div style="text-align: right;">https://dev.qweather.com/docs/resource/location-list/ </div>
+              <div style="text-align: right;">Bilibili ID<input type="text" id ="biliID" name="biliID" value="%biliID%"></div>
+              <div style="text-align: right;"><a href="https://space.bilibili.com/19090045" target="_blank">https://space.bilibili.com/<font color=red>19090045</font></a>相应红色部分</div>
+              <br>
+
+              <input type ="submit" value ="提交">
+            </p>
+          </form>
+          <a href="/reboot" target="frmota"><button class="button-red" style="width: 16rem;">提交后点重启(不提示)</button></a>
+        </div>
+      </div>
+      
+      <br>
+      <div class="card-grid" style="display:none" id="OTA">
+        <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> OTA 地址前缀</p>
+          <form action="/otahost" method="POST" target="frmota">
+            <p>
+              <input type="text" id ="otahost" name="otahost" value="%OTAHOST%"><br>
+              <input type ="submit" value ="提交">
+            </p>
+          </form>
+      
+          <p class="card-title"><i class="fas fa-lightbulb"></i>OTA(点击就开始更新，不提示)</p>
+          <p>
+            <a href="/auto"   target="frmota"><button class="button-on">内核</button></a>
+            <a href="/autofs" target="frmota"><button class="button-on">界面</button></a>
+            <a href="/reboot" target="frmota"><button class="button-red">重启</button></a>
+          </p>
+          <iframe name="frmota" style="display:none"></iframe>
+        </div>
+      </div>
+    </div>
+    
+  <!--
+  <div class="content">
+    <div class="card-grid">
+      <div class="card">
+        <form action="/checkip" method="POST">
+          <p align="right">
+            <label for="checkip">检测地址</label>
+            <input type="text" id ="checkip" name="checkip" value="%CHECKIP%"><br>
+            <input type ="submit" value ="提交">
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+  -->
+    
+    <div onclick="showAlert()">中技云第十一波 %VERSION%</div>
+    <script>
+      function showAlert() {
+        if (confirm("是否要重置重新配网？")) {
+          // 用户点击了“确定”按钮
+          window.location.href = "reset";
+        } else {
+          // 用户点击了“取消”按钮
+        }
+      }
+      
+      function showOTA() {
+         document.getElementById("OTA").style.display = "";
+      }
+    </script>
+  </body>
+</html>
