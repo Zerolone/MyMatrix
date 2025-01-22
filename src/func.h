@@ -94,6 +94,12 @@ String processor(const String& var) {
   if(var == "secDate")   return String(secDate);
   if(var == "secB")      return String(secB);
   if(var == "secTemp")   return String(secTemp);
+  
+  if(var == "mqtt_server") return mqtt_server;
+  if(var == "mqtt_port") return mqtt_port;
+  if(var == "mqtt_user") return mqtt_user;
+  if(var == "mqtt_pass") return mqtt_pass;
+  if(var == "checkid") return checkid;
 
   return String();
 }
@@ -120,7 +126,6 @@ void writeFile(fs::FS &fs, String type){
     c["gateway"] = gateway;
     c["ota"]     = ota;
     c["otahost"] = otahost;
-    c["checkid"] = checkid;
   }
 
   if(type=="soft") {
@@ -137,8 +142,19 @@ void writeFile(fs::FS &fs, String type){
     c["secDate"]   = secDate;
     c["secB"]      = secB;
     c["secTemp"]   = secTemp;
-    //jsonDoc[""]     = ;
+    //c[""]     = ;
   }
+  
+  if(type=="mqtt") {
+    path   = mqttPath;
+    
+    c["mqtt_server"] = mqtt_server;
+    c["mqtt_port"]   = mqtt_port;
+    c["mqtt_user"]   = mqtt_user;
+    c["mqtt_pass"]   = mqtt_pass;
+    c["checkid"]     = checkid;
+    //c[""]     = ;
+  }  
   
   /**/
   // 将JSON对象写入文件
@@ -180,7 +196,7 @@ void initConfig(){
   DeserializationError error = deserializeJson(c, readFile(LittleFS, sysPath));
   // 检查解析是否成功
   if (error) {
-    sinfo("JSON parsing failed: ", error.c_str());
+    sinfo("sys JSON parsing failed: ", error.c_str());
   }
   
   ssid    = c["ssid"].as<String>();
@@ -189,16 +205,14 @@ void initConfig(){
   gateway = c["gateway"].as<String>();
   ota     = c["ota"].as<String>();
   otahost = c["otahost"].as<String>();
-  checkid = c["checkid"].as<String>();
-
+  
   sinfo("ssid=",    ssid);
   sinfo("pass=",    pass);
   sinfo("ip=",      ip);
   sinfo("gateway=", gateway);
   sinfo("ota=",     ota);
   sinfo("otahost=", otahost);
-  sinfo("checkid=", checkid);
-
+  
   //---------------------------
   //读取 软件配置
   strTmp  = readFile(LittleFS, softPath);
@@ -207,7 +221,7 @@ void initConfig(){
 
   // 检查解析是否成功
   if (error) {
-    sinfo("JSON parsing failed: ", error.c_str());
+    sinfo("soft JSON parsing failed: ", error.c_str());
   }
   
   intBright = c["intBright"].as<int>();
@@ -229,7 +243,7 @@ void initConfig(){
   sinfo("biliID=",    biliID);
   sinfo("wUserKey=",  wUserKey);
   sinfo("wLocation=", wLocation);
-
+  
   sinfo("chkDate=", String(chkDate));
   sinfo("chkB=",    String(chkB));
   sinfo("chkTemp=", String(chkTemp));
@@ -239,17 +253,45 @@ void initConfig(){
   
   //默认类型
   if(mType < 1) mType = 1;
-
+  
   //默认亮度
   if(intBright < 1) intBright = 1;
-
+  
   //初始化
   if(mType == 1) matrix = new Adafruit_NeoMatrix(8, 8, 4, 1, PIN_LIGHT, NEO_MATRIX_TOP     + NEO_MATRIX_LEFT  + NEO_MATRIX_ROWS    + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);
   if(mType == 2) matrix = new Adafruit_NeoMatrix(32, 8,      PIN_LIGHT, NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);
-
+  
   matrix->begin();
   matrix->setTextWrap(false);
   matrix->setBrightness(intBright);
+  
+  //---------------------------
+  //读取 mqtt配置
+  strTmp  = readFile(LittleFS, mqttPath);
+  
+  error = deserializeJson(c, strTmp);
+  
+  // 检查解析是否成功
+  if (error) {
+    sinfo("mqtt JSON parsing failed: ", error.c_str());
+  }
+  
+  mqtt_server  = c["mqtt_server"].as<String>();
+  mqtt_port    = c["mqtt_port"].as<String>();
+  mqtt_user    = c["mqtt_user"].as<String>();
+  mqtt_pass    = c["mqtt_pass"].as<String>();
+  checkid      = c["checkid"].as<String>();
+  
+  mqttclientId = "z124_" + WiFi.macAddress();
+  willTopic    = checkid + "/available"; // 遗嘱主题
+  
+  sinfo("mqtt_server=",  mqtt_server);
+  sinfo("mqtt_port=",    mqtt_port);
+  sinfo("mqtt_user=",    mqtt_user);
+  sinfo("mqtt_pass=",    mqtt_pass);
+  sinfo("checkid=",      checkid);
+  sinfo("mqttclientId=", mqttclientId);
+  sinfo("willTopic=",    willTopic);
 }
 
 // 初始化WIFI
@@ -662,7 +704,7 @@ void callbackx(char* topic, byte* message, unsigned int length) {
 //mqtt重连
 void reconnect() {
   while (!client.connected()) {
-    if (client.connect(mqttclientId.c_str(), mqtt_user, mqtt_password, willTopic.c_str(), willQoS, willRetain, willMsg)) {
+    if (client.connect(mqttclientId.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), willTopic.c_str(), willQoS, willRetain, willMsg)) {
       sinfo("reconnected");
       sinfo("topic=", checkid);
       client.subscribe((checkid + "/#").c_str());
@@ -784,9 +826,7 @@ void onEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *wsclient, AwsEv
     //iHost
     if(strMode == "iHost"){isHas = 1; otahost = parts[1]; writeFile(LittleFS, "sys");}
     */
-
-    //修改 checkid otahost
-    if(strMode == "checkid"){ isHas = 1; checkid = parts[1];  writeFile(LittleFS, "sys");}
+    
     if(strMode == "otahost"){ isHas = 1; otahost = parts[1];  writeFile(LittleFS, "sys");}
 
     //ota, otafs, reboot, reset
@@ -805,18 +845,31 @@ void onEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *wsclient, AwsEv
         ticker.once(tmrSec, tick);
       }
     }
-
+    
     //led 内置灯
     if(strMode == "led"){
       isHas = 1; switchTest(PIN_LED, parts[1]);
       ws.textAll("led|" + parts[1]);
     }
-
+    
     //是否显示日期、b站、日期
     if(strMode == "date"){ isHas = 1; chkDate = parts[1].toInt(); writeFile(LittleFS, "soft");}
     if(strMode == "b")   { isHas = 1; chkB    = parts[1].toInt(); writeFile(LittleFS, "soft");}
     if(strMode == "temp"){ isHas = 1; chkTemp = parts[1].toInt(); writeFile(LittleFS, "soft");}
-  
+    
+    //修改 mqtt
+    if(strMode == "mqtt"){ 
+      isHas = 1; 
+      
+      mqtt_server = parts[1];
+      mqtt_port   = parts[2];
+      mqtt_user   = parts[3];
+      mqtt_pass   = parts[4];
+      checkid     = parts[5];
+      
+      writeFile(LittleFS, "mqtt");
+    }
+    
     //soft，各种配置
     if(strMode == "soft"){ 
       isHas = 1; 

@@ -266,14 +266,15 @@ void setup() {
       //////
       /*mqtt部分*/
       //测试用
-      client.setServer(mqtt_server, mqtt_port);
+      //client.setServer(mqtt_server, mqtt_port);
+      client.setServer(mqtt_server.c_str(), mqtt_port.toInt());
       client.setCallback(callbackx);
 
       unsigned tmpLoop = 0;
       while (!client.connected()) {
         Serial.print("Setup Connecting to MQTT Server...");
         //if (client.connect(mqttclientId.c_str(), mqtt_user, mqtt_password)) {
-        if (client.connect(mqttclientId.c_str(), mqtt_user, mqtt_password, willTopic.c_str(), willQoS, willRetain, willMsg)) {
+        if (client.connect(mqttclientId.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), willTopic.c_str(), willQoS, willRetain, willMsg)) {
           sinfo("connected");
           sinfo("topic=", checkid);
           client.subscribe((checkid + "/#").c_str());

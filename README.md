@@ -14,6 +14,12 @@ esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after 
 配网页面支持各种系统
 配网页面不支持ios系统
 
+###功能说明
+1、显示时间
+2、显示室外、室内温度（需要DHT11模块）
+3、通过websocket、mqtt发送内容显示
+4、网页修改配置
+
 
 ![配网页面](https://raw.githubusercontent.com/Zerolone/ESP8266Tester/main/screenshot/0.jpg)
 
@@ -21,10 +27,13 @@ esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after 
 ![设置页面](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/01.jpg)
 
 
-![设置页面](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/02.jpg)
+![OTA更新](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/02.jpg)
+
+
+![设置MQTT](https://raw.githubusercontent.com/Zerolone/MyMatrix/main/screenshot/03.jpg)
 
 -------
 git add .
-git commit -m "2025-1-20"
+git commit -m "更新设置mqtt"
 git push
 
