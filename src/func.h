@@ -1,10 +1,17 @@
+//event
+void esend(String str){
+  events.send(str.c_str());
+}
+
 //调试显示
 void sinfo(String str, String strInfo=""){
   if (SHOWINFO == 1) {
     if (strInfo == ""){
       Serial.println(str);
+      //esend(str);
     }else{
       Serial.println(str + "" + strInfo);
+      //esend(str+ "" + strInfo);
     }
   }
   //  sprintf(output, "Sensor value: %d, Temperature: %.2f", sensorValue, temperature);
@@ -61,15 +68,12 @@ void zpost(String postdata){
     int httpResponseCode = http.POST(postdata.c_str());
   
     if (httpResponseCode > 0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
+      sinfo("HTTP  code: ", String(httpResponseCode));
     } else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
+      sinfo("Error code: ", String(httpResponseCode));
     }
     http.end();
 }
-
 
 
 //同上
@@ -426,23 +430,23 @@ void update_error(int err) {
 void updateOTA() {
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
 
-    // Add optional callback notifiers
-    ESPhttpUpdate.onStart(update_started);
-    ESPhttpUpdate.onEnd(update_finished);
-    ESPhttpUpdate.onProgress(update_progress);
-    ESPhttpUpdate.onError(update_error);
-    ESPhttpUpdate.rebootOnUpdate(false); // remove automatic update
+  // Add optional callback notifiers
+  ESPhttpUpdate.onStart(update_started);
+  ESPhttpUpdate.onEnd(update_finished);
+  ESPhttpUpdate.onProgress(update_progress);
+  ESPhttpUpdate.onError(update_error);
+  ESPhttpUpdate.rebootOnUpdate(false); // remove automatic update
       
-    t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, otahost + OTAURL);
+  t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, otahost + OTAURL);
 
-    ota = "0";
-    writeFile(LittleFS, "sys");
+  ota = "0";
+  writeFile(LittleFS, "sys");
 
-    switch (ret) {
-      case HTTP_UPDATE_FAILED: Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); break;
-      case HTTP_UPDATE_NO_UPDATES: Serial.println("HTTP_UPDATE_NO_UPDATES"); break;
-      case HTTP_UPDATE_OK: Serial.println("HTTP_UPDATE_OK"); break;
-    }  
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:     Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); break;
+    case HTTP_UPDATE_NO_UPDATES: sinfo("HTTP_UPDATE_NO_UPDATES"); break;
+    case HTTP_UPDATE_OK:         sinfo("HTTP_UPDATE_OK"); break;
+  }  
 }
 
 void updateOTAFS() {
@@ -462,9 +466,9 @@ void updateOTAFS() {
   writeFile(LittleFS, "soft");
 
   switch (ret) {
-    case HTTP_UPDATE_FAILED: Serial.printf("FS HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); break;
-    case HTTP_UPDATE_NO_UPDATES: Serial.println("FS HTTP_UPDATE_NO_UPDATES"); break;
-    case HTTP_UPDATE_OK: Serial.println("FS HTTP_UPDATE_OK"); break;
+    case HTTP_UPDATE_FAILED:     Serial.printf("FS HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str()); break;
+    case HTTP_UPDATE_NO_UPDATES: sinfo("FS HTTP_UPDATE_NO_UPDATES"); break;
+    case HTTP_UPDATE_OK:         sinfo("FS HTTP_UPDATE_OK"); break;
   }  
 }
 
@@ -632,7 +636,6 @@ void updateWeather(){
   wTemp2 = dht.readTemperature();
 }
 
-
 //mqtt---------------------------------------
 void callbackx(char* topic, byte* message, unsigned int length) {
   String strMessage = "";
@@ -644,8 +647,7 @@ void callbackx(char* topic, byte* message, unsigned int length) {
   sinfo("Topic:",   topic);
   sinfo("Message:", strMessage);
 
-  ws.textAll(topic);
-  ws.textAll(strMessage);
+  esend(String(topic) + ":" + strMessage);
 
   //判断topic
   //获取LED状态
@@ -658,7 +660,7 @@ void callbackx(char* topic, byte* message, unsigned int length) {
     //发送状态
     bolStatusLed = true;
     sendMsg(topicstatus+"/led", strTmp);
-    ws.textAll("LED_BUILTIN="+strTmp);
+    esend("LED_BUILTIN="+strTmp);
   }
 
   //
@@ -681,7 +683,7 @@ void callbackx(char* topic, byte* message, unsigned int length) {
     sendMsg(topicstatus+"/led", strMessage);
     bolStatusLed = true;
 
-    ws.textAll("status|io2|" + strMessage);
+    esend("status|io2|" + strMessage);
   }
 
   //是否在线
@@ -724,187 +726,9 @@ void reconnect() {
   }
 }
 
-
 //websocket部分----------------
 //回调函数
 void handleRoot(AsyncWebServerRequest *request){
   sinfo("User requested.");
   request->send(200, "html", "<p>Hello World!</p>");
-}
-
-// WebSocket事件回调函数
-void onEventHandle(AsyncWebSocket *server, AsyncWebSocketClient *wsclient, AwsEventType type, void *arg, uint8_t *data, size_t len){
-  String strMessage = "";
-  String strTmp     = "";
-
-  // 有客户端建立连接
-  if (type == WS_EVT_CONNECT) {
-    Serial.printf("ws[%s][%u] connect\n", server->url(), wsclient->id());
-
-    //client->printf("Hello Client %u !", client->id()); // 向客户端发送数据
-
-    //pinMode(LED, INPUT);
-    strTmp = "0";
-    if (digitalRead(PIN_LED) == 1 ) strTmp = "1";
-    
-    sinfo("strTmp=", strTmp);
-    
-    //Serial.println(digitalRead(LED));
-
-    //返回led的状态
-    wsclient->text("led|"  + strTmp);
-    wsclient->text("date|" + String(chkDate));
-    wsclient->text("b|"    + String(chkB));
-    wsclient->text("temp|" + String(chkTemp));
-    
-    sinfo("strMessage=", strMessage);
-
-    wsclient->ping();                                    // 向客户端发送ping
-  }
-  else if (type == WS_EVT_DISCONNECT) // 有客户端断开连接
-  {
-    Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), wsclient->id());
-  }
-  else if (type == WS_EVT_ERROR) // 发生错误
-  {
-    Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), wsclient->id(), *((uint16_t *)arg), (char *)data);
-  }
-  else if (type == WS_EVT_PONG) // 收到客户端对服务器发出的ping进行应答（pong消息）
-  {
-    Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), wsclient->id(), len, (len) ? (char *)data : "");
-  }
-  else if (type == WS_EVT_DATA) // 收到来自客户端的数据
-  {
-    AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    Serial.printf("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(), wsclient->id(), info->num, (info->message_opcode == WS_TEXT) ? "text" : "binary", info->index, info->index + len);
-    data[len] = 0;
-    Serial.printf("%s\n", (char *)data);
-
-    char strc[info->index + len]; // 额外一个位置用于存储字符串结束符 '\0'
-    // 将 uint8_t 数组转换为字符串
-    for (unsigned int i = 0; i < info->index + len; i++) {
-      strc[i] = (char)data[i];
-    }
-
-    //client->printf((char *)data); // 向客户端发送数据
-
-    String input = String(strc);
-    unsigned int partCount = 0;  
-    int pos = 0;  
-    
-    // 计算部分数量  
-    for (unsigned int i = 0; i < input.length(); i++) {  
-      if (input[i] == '|') {  
-        partCount++;  
-      }  
-    }  
-    partCount++; // 因为字符串末尾没有'|'，所以部分数量需要加1  
-    
-    // 分配字符串数组来存储每个部分  
-    String parts[partCount];  
-    
-    // 切开字符串并存储每个部分  
-    for (unsigned int i = 0; i < partCount; i++) {  
-      int nextPos = input.indexOf('|', pos);  
-      if (nextPos == -1) {  
-        nextPos = input.length(); // 如果找不到'|'，则到字符串末尾  
-      }  
-      parts[i] = input.substring(pos, nextPos);  
-      pos = nextPos + 1; // 更新位置以查找下一个部分  
-    }
-
-    String strMode = parts[0];
-    int isHas   = 0;
-
-    /*
-    //ws2812灯珠
-    if(strMode == "ws2812"){isHas = 1; ws2812Test(parts[1], parts[2], parts[3], parts[4]);}
-
-    //sr04距离感应
-    if(strMode == "sr04")  {isHas = 1; client->text(sr04Test(parts[1], parts[2]));}
-
-    //iHost
-    if(strMode == "iHost"){isHas = 1; otahost = parts[1]; writeFile(LittleFS, "sys");}
-    */
-    
-    if(strMode == "otahost"){ isHas = 1; otahost = parts[1];  writeFile(LittleFS, "sys");}
-
-    //ota, otafs, reboot, reset
-    if(strMode == "auto")  { isHas = 1; ota = "1";  writeFile(LittleFS, "sys"); ESP.restart();}
-    if(strMode == "autofs"){ isHas = 1; ota = "2";  writeFile(LittleFS, "sys"); ESP.restart();}
-    if(strMode == "reboot"){ isHas = 1; ESP.restart();}
-    if(strMode == "reset") { isHas = 1; ssid = "0"; writeFile(LittleFS, "sys"); ESP.restart();}
-    
-    //tmr
-    if(strMode == "tmr"){
-      isHas = 1;
-      int tmrSec = parts[2].toInt();
-      if(parts[1] == "on"){
-        ticker.once(tmrSec, tickOn);
-      }else{
-        ticker.once(tmrSec, tick);
-      }
-    }
-    
-    //led 内置灯
-    if(strMode == "led"){
-      isHas = 1; switchTest(PIN_LED, parts[1]);
-      ws.textAll("led|" + parts[1]);
-    }
-    
-    //是否显示日期、b站、日期
-    if(strMode == "date"){ isHas = 1; chkDate = parts[1].toInt(); writeFile(LittleFS, "soft");}
-    if(strMode == "b")   { isHas = 1; chkB    = parts[1].toInt(); writeFile(LittleFS, "soft");}
-    if(strMode == "temp"){ isHas = 1; chkTemp = parts[1].toInt(); writeFile(LittleFS, "soft");}
-    
-    //修改 mqtt
-    if(strMode == "mqtt"){ 
-      isHas = 1; 
-      
-      mqtt_server = parts[1];
-      mqtt_port   = parts[2];
-      mqtt_user   = parts[3];
-      mqtt_pass   = parts[4];
-      checkid     = parts[5];
-      
-      writeFile(LittleFS, "mqtt");
-    }
-    
-    //soft，各种配置
-    if(strMode == "soft"){ 
-      isHas = 1; 
-      intBright = parts[1].toInt();
-      mType     = parts[2].toInt();
-      biliID    = parts[3].toInt();
-      wUserKey  = parts[4];
-      wLocation = parts[5];
-      
-      secDate   = parts[6].toInt();
-      secB      = parts[7].toInt();
-      secTemp   = parts[8].toInt();
-      
-      matrix->setBrightness(intBright);
-      
-      writeFile(LittleFS, "soft");
-    }
-
-    //str，即时滚动字符串
-    if(strMode == "str"){ 
-      isHas = 1;
-
-      strRole = input;
-      strRole.replace(strMode+"|", "");
-
-      sinfo("strRole=", strRole);
-
-    }
-
-    //
-    if(isHas == 1){
-      wsclient->printf("功能命中");
-    }else{
-      wsclient->printf("功能未命中");
-    } 
-    wsclient->ping(); 
-  }
 }

@@ -1,10 +1,15 @@
 //2025-1-17 16:51:33
 //ESP8266用， GPIO,显示用，接D2
-const unsigned PIN_LIGHT = D2;
-const unsigned PIN_DHT11 = D5;  //温度计io
+/**
+ * D2 → GPIO4
+ * D5 → GPIO14
+ * 
+ */
+const unsigned PIN_LIGHT = 4;
+const unsigned PIN_DHT11 = 14;  //温度计io
 const unsigned PIN_LED   = 2;   //内部LED灯io
 //////////////////////////////////////////////////
-const char* VERSION = "2.0.3 LOCAL";
+const char* VERSION = "2.0.1 LOCAL";
 
 //是否显示调试信息
 const int SHOWINFO = 1;
@@ -47,7 +52,7 @@ boolean isShow = true;
 
 //启用webserver
 AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");    // WebSocket对象，url为/
+AsyncEventSource events("/es");
 
 //OTA 在线更新
 const char* OTAURL   = "/esp8266.bin";

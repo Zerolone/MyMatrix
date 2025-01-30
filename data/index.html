@@ -1,60 +1,132 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>2.0.3</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>%IP%</title>
+    <meta name="viewport" content="width=device-width, initial-scale =1">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="favicon.png">
   </head>
   <body>
     <div class="topnav">
-      <h1 onclick="showOTA()">网页配置 %BOARD%</h1>
+      <h1 id="btnOTA">%BOARD% 桌面像素摆件 2.0.1</h1>
     </div>
     <div class="content">
       <div class="card-grid">
         <div class="card">
-        <p class="card-title"><i class="fas fa-lightbulb"></i> 各项设置</p>
-          <form action="/checkid" method="POST"  target="frmota">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> 各项设置【像素灯接<font color="red">D2</font>，DHT11接<font color="red">D5</font>】</p>
             <p>
               <div style="text-align: right;">灯珠类型<input type="text" id ="mType"      name="mType"    value="%mType%"></div>
-              <div style="text-align: right;">目前有1、2 两种 </div>
+              <div style="text-align: right;">目前有1、2 两种&nbsp;</div>
               <div style="text-align: right;">灯珠亮度<input type="text" id ="intBright" name="intBright" value="%intBright%"></div>
+              <div style="text-align: right;">1-255&nbsp;</div>
               <div style="text-align: right;">和风天气API私钥<input type="text" id ="wUserKey"  name="wUserKey"  value="%wUserKey%"></div>
-              <div style="text-align: right;">https://dev.qweather.com/docs/start/ </div>
+              <div style="text-align: right;"><a href="https://dev.qweather.com/docs/start/" target="_blank">https://dev.qweather.com/docs/start/</a>&nbsp;</div>
               <div style="text-align: right;">和风天气城市代码<input type="text" id ="wLocation" name="wLocation" value="%wLocation%"></div>
-              <div style="text-align: right;">https://dev.qweather.com/docs/resource/location-list/ </div>
+              <div style="text-align: right;"><a href="https://dev.qweather.com/docs/resource/location-list/" target="_blank">https://dev.qweather.com/docs/resource/location-list/</a>&nbsp;</div>
               <div style="text-align: right;">Bilibili ID<input type="text" id ="biliID" name="biliID" value="%biliID%"></div>
               <div style="text-align: right;"><a href="https://space.bilibili.com/19090045" target="_blank">https://space.bilibili.com/<font color=red>19090045</font></a>相应红色部分</div>
+              
+              <div style="text-align: right;">
+                <i class="fas fa-lightbulb"></i> 日期时间星期
+                <!-- 圆形开关 -->
+                <label class="switch">
+                  <input type="checkbox" id="chkDate" >
+                  <span class="slider"></span>
+                </label>
+                
+                显示时间<input type="text" id ="secDate"  name="secDate"  style="width:60px" value="%secDate%">秒&nbsp;
+              </div>
+              
+              <div style="text-align: right;">
+                <i class="fas fa-lightbulb"></i> B站
+                <!-- 圆形开关 -->
+                <label class="switch">
+                  <input type="checkbox" id="chkB" >
+                  <span class="slider"></span>
+                </label>
+                显示时间<input type="text" id ="secB"  name="secB"  style="width:60px" value="%secB%">秒&nbsp;
+              </div>
+                
+              <div style="text-align: right;">
+                <i class="fas fa-lightbulb"></i> 天气温度
+                <!-- 圆形开关 -->
+                <label class="switch">
+                  <input type="checkbox" id="chkTemp" >
+                  <span class="slider"></span>
+                </label>
+                显示时间<input type="text" id ="secTemp"  name="secTemp"  style="width:60px" value="%secTemp%">秒&nbsp;
+              </div>
+                
+              <button class="button-on" id="btnSave">提交</button>
               <br>
-
-              <input type ="submit" value ="提交">
             </p>
-          </form>
-          <a href="/reboot" target="frmota"><button class="button-red" style="width: 16rem;">提交后点重启(不提示)</button></a>
         </div>
       </div>
-      
       <br>
-      <div class="card-grid" style="display:none" id="OTA">
+
+      <div class="card-grid">
         <div class="card">
-        <p class="card-title"><i class="fas fa-lightbulb"></i> OTA 地址前缀</p>
-          <form action="/otahost" method="POST" target="frmota">
-            <p>
-              <input type="text" id ="otahost" name="otahost" value="%OTAHOST%"><br>
-              <input type ="submit" value ="提交">
-            </p>
-          </form>
-      
-          <p class="card-title"><i class="fas fa-lightbulb"></i>OTA(点击就开始更新，不提示)</p>
-          <p>
-            <a href="/auto"   target="frmota"><button class="button-on">内核</button></a>
-            <a href="/autofs" target="frmota"><button class="button-on">界面</button></a>
-            <a href="/reboot" target="frmota"><button class="button-red">重启</button></a>
+          <p class="card-title"><i class="fas fa-lightbulb"></i> 调试字符串
+              <input type="text" id ="strTest" name="strTest" value="">
+              <button class="button-on" id="btnTest" >发送</button>
           </p>
-          <iframe name="frmota" style="display:none"></iframe>
         </div>
       </div>
+      <br>
+
+      <div class="card-grid">
+        <div class="card">
+        <p class="card-title"><i class="fas fa-lightbulb"></i> 调试区
+          <button type="button" class="button-on" id="btnClear">清理</button>
+
+      
+              <i class="fas fa-lightbulb"></i> 主板灯(GPIO 2)
+                <!-- 圆形开关 -->
+                <label class="switch">
+                  <input type="checkbox" id="chkled" >
+                  <span class="slider"></span>
+                </label>
+              
+
+          <div style="display:none1;overflow-y: auto;flex: 1;height:200px;text-align:left;background-color:#ccc" id="mmo"></div>
+        </p>
+        </div>
+      </div>
+      <br>
+      
+      <div class="card-grid" style="display:none" id="divOTA">
+        <div class="card">
+          <p class="card-title"><i class="fas fa-lightbulb"></i> MQTT设置 </p>
+
+          <p>
+            <div style="text-align: right;">IP/URL<input type="text" id ="mqtt_server"  name="mqtt_server"  value="%mqtt_server%"></div>
+            <div style="text-align: right;">端口  <input type="text" id ="mqtt_port"    name="mqtt_port"    value="%mqtt_port%"></div>
+            <div style="text-align: right;">账号  <input type="text" id ="mqtt_user"    name="mqtt_user"    value="%mqtt_user%"></div>
+            <div style="text-align: right;">密码  <input type="text" id ="mqtt_pass"    name="mqtt_pass"    value="%mqtt_pass%"></div>
+            <div style="text-align: right;">设备编号 MQTT (可不唯一)<input type="text" id ="checkid"      name="checkid"    value="%checkid%"></div>
+            <button class="button-on" id="btnCheckid"  style="width:256px;">更新(需重启生效)</button>
+          </p>
+        </div>
+        <br>
+        
+        <div class="card">
+          <p class="card-title"><i class="fas fa-lightbulb"></i> OTA 地址前缀
+              <input type="text" id ="otahost" value="%OTAHOST%" style="width:200px;">
+              <button type="button" class="button-on" id="btnOTAHost">提交</button>
+          </p>
+          
+          <p class="card-title"><i class="fas fa-lightbulb"></i>OTA(点击就开始更新，不提示，先更新界面，再更新内核。)</p>
+          <p>
+            <button class="button-on"   id="btnAutofs">界面</button>
+            <button class="button-core" id="btnAuto">内核</button>
+            <button class="button-red"  id="btnReset" style="width:128px;">重新配网</button>
+            <button class="button-red"  id="btnReboot">重启</button>
+          </p>
+        </div>
+      </div>
+      
+      
     </div>
     
   <!--
@@ -73,20 +145,310 @@
   </div>
   -->
     
-    <div onclick="showAlert()">中技云第十一波 %VERSION%</div>
-    <script>
-      function showAlert() {
-        if (confirm("是否要重置重新配网？")) {
-          // 用户点击了“确定”按钮
-          window.location.href = "reset";
-        } else {
-          // 用户点击了“取消”按钮
+    中技云之十二 %VERSION%
+<script language="javascript">
+//规则编号，方便删除用的
+var intRule = 0;
+var strRule = '';
+
+//临时字符串变量，仅放入func里面使用
+var tmpIO   = '';
+var tmpVole = '';
+var intTmp  = 0;
+var strTmp  = '';
+
+//选择元素  
+function obj(id){
+  return document.getElementById(id);
+}
+  
+//调试用
+function sinfo(log){
+  mmo.innerHTML  = mmo.innerHTML + log+'<br>';
+  mmo.scrollTop = mmo.scrollHeight;
+    
+  console.info(log);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  //2个io的状态
+  var statswith  = false;
+  var statled    = false;
+  
+  //
+  const chkswitch = document.getElementsByClassName('chkswitch');
+  
+  //2个io
+  var chkled = obj('chkled');
+  
+  //websocket的地址
+  var mainurl = 'http://%IP%/';
+  var pattern = /192\.168/;
+  if (pattern.test(window.location.href)) {
+  } else {
+    mainurl = 'http://192.168.123.124/';
+  }
+  var esurl = mainurl + 'es';
+  
+  //调试
+  var mmo = obj('mmo');
+  
+  //websocket
+  var socket = '';
+  
+  //是否链接到了websocket
+  var isConn = false;
+  
+  //socket返回的内容
+  var msg    = '';
+  var msgArr = [];
+
+  
+  sinfo('ready..');
+
+  //EventSource
+  if (typeof (EventSource) !== "undefined") {
+    var source = new EventSource(esurl);
+    source.onopen = function () { 
+      // 连接建立成功时触发
+      sinfo('EventSource连接成功');
+      isConn = true;
+    }
+    
+    source.onmessage = function (event) {
+      msg = event.data;
+      sinfo('收到消息: ' + msg);
+    
+      msgArr = msg.split('|');
+        
+      switch (msgArr[0]) {
+        case 'led':
+          sinfo('获取led状态, 是反的');
+          if(msgArr[1] == '0') { chkled.checked    = true;} else {chkled.checked    = false;}
+            
+          break;
+        
+        case 'date':
+          sinfo('获取是否显示日期');
+          if(msgArr[1] == '1') { chkDate.checked    = true;} else {chkDate.checked    = false;}
+          
+          break;
+        
+        case 'b':
+          sinfo('获取是否显示b站');
+          if(msgArr[1] == '1') { chkB.checked       = true;} else {chkB.checked       = false;}
+          
+          break;
+        
+        case 'temp':
+          sinfo('获取是否显示温度');
+          if(msgArr[1] == '1') { chkTemp.checked    = true;} else {chkTemp.checked    = false;}
+          
+          break;
+        
+        case 'info':
+            // 执行代码块2
+            break;
+        // 可以有任意多个 case
+        default:
+            // 如果没有匹配的 case，执行这部分代码
+      }
+    }
+
+    source.onerror = function () {
+      isConn = false;
+
+      alert('通讯发送错误！点击确定刷新页面。');
+      location.reload();      
+    }
+  } else {
+    alert('浏览器不支持 EventSource');
+  }
+  
+  //发送消息给server,用post方式
+  function send(str){
+    // 使用 fetch 发送 POST 请求
+    fetch(mainurl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded', // 设置请求头为 URL 编码格式
+        },
+        //body: 'c='+str                      // 直接传递 URL 编码的字符串
+        body: 'c=' + encodeURIComponent(str)  // 使用 encodeURIComponent 对参数进行编码，防止特殊字符出错
+    })
+    .then(response => {
+        // 判断响应状态码
+        if (!response.ok) {
+            throw new Error('请求失败，状态码：' + response.status);
         }
+        return response.text(); // 解析文本响应
+    })
+    .then(data => {
+      // 这里可以检查响应数据的内容是否符合预期
+      if (data) {
+          console.log('请求成功:', data);
+      } else {
+          throw new Error('返回的数据为空');
       }
-      
-      function showOTA() {
-         document.getElementById("OTA").style.display = "";
-      }
-    </script>
+    })
+    .catch((error) => {
+        console.error('请求出错:', error);
+    });
+
+    sinfo('<font color="green">发送消息：' + str + '</font>');
+  }
+  
+  function showAlert() {
+    if (confirm("是否要重置重新配网？")) {
+      // 用户点击了“确定”按钮
+      window.location.href = "reset";
+    } else {
+      // 用户点击了“取消”按钮
+    }
+  }
+  
+  function showOTA() {
+    document.getElementById("OTA").style.display = "";
+  }
+  
+  /**
+  var chkled = obj('chkled');
+  chkled.checked = true; // 或者 false
+  
+  var chkswitch = obj('chkswitch');
+  chkswitch.checked = true; // 或者 false
+  /**/
+  
+  chkled.addEventListener('click', function() {
+    intTmp = 1;
+    if(this.checked){
+      intTmp = 0;
+    }
+    send('led|'+intTmp);
+  });
+  
+  
+  //
+  obj('chkDate').addEventListener('click', function() {
+    intTmp = 0;
+    if(this.checked){
+      intTmp = 1;
+    }
+    send('date|'+intTmp);
+  });  
+  
+  //
+  obj('chkB').addEventListener('click', function() {
+    intTmp = 0;
+    if(this.checked){
+      intTmp = 1;
+    }
+    send('b|'+intTmp);
+  });  
+  
+  //
+  obj('chkTemp').addEventListener('click', function() {
+    intTmp = 0;
+    if(this.checked){
+      intTmp = 1;
+    }
+    send('temp|'+intTmp);
+  });  
+  
+  
+  //配置设置
+  var btnSave = obj('btnSave');
+  btnSave.addEventListener('click', function() {
+    strTmp = '';
+    strTmp+= '|'+obj('intBright').value;
+    strTmp+= '|'+obj('mType').value;
+    strTmp+= '|'+obj('biliID').value;
+    strTmp+= '|'+obj('wUserKey').value;
+    strTmp+= '|'+obj('wLocation').value;
+    strTmp+= '|'+obj('secDate').value;
+    strTmp+= '|'+obj('secB').value;
+    strTmp+= '|'+obj('secTemp').value;
+    //strTmp+= '|'+obj('').value;
+    send('soft'+strTmp);
+  });
+  
+  //更新checkid
+  obj('btnCheckid').addEventListener('click', function() { 
+    strTmp = '';
+    strTmp+= '|'+obj('mqtt_server').value;
+    strTmp+= '|'+obj('mqtt_port').value;
+    strTmp+= '|'+obj('mqtt_user').value;
+    strTmp+= '|'+obj('mqtt_pass').value;
+    strTmp+= '|'+obj('checkid').value;
+    
+    send('mqtt'+strTmp);
+    
+    disBtn(this);
+    alert("修改后， 需要重启， 点击确认重启");
+    send('reboot');
+  });
+
+  
+  //发送测试字符串
+  obj('btnTest').addEventListener('click', function() {
+    console.log('btnTest');
+    send('str|' + obj('strTest').value);
+  });
+
+  
+  //更新otahost
+  obj('btnOTAHost').addEventListener('click', function() { send('otahost|' + obj('otahost').value);  disBtn(this); });
+  
+  //清空调试
+  obj('btnClear').addEventListener('click', function() { mmo.innerHTML = ''; });
+  
+  //显示设置部分
+  var divOTA  = obj('divOTA');
+  var showOTA = false;
+  obj('btnOTA').addEventListener('click', function() {
+    if(showOTA){
+      divOTA.style.display = 'none';
+      showOTA = false;
+    }else{
+      divOTA.style.display  = 'block';
+      showOTA = true;
+    }
+  });
+  
+  //OTA部分
+  obj('btnAuto'  ).addEventListener('click', function() { send('auto');   disBtn(this); alert("内核更新中，3秒左右主板灯会闪烁,等闪烁停止后再过5秒刷新。") });
+  obj('btnAutofs').addEventListener('click', function() { send('autofs'); disBtn(this); alert("界面更新中，3秒左右主板灯会闪烁,等闪烁停止后再过5秒刷新。") });
+  obj('btnReboot').addEventListener('click', function() { send('reboot'); disBtn(this); alert("重启中，10秒后刷新。") });
+  
+  //重置
+  obj('btnReset'  ).addEventListener('click', function() {
+  if (confirm("是否要重置重新配网？")) {
+      // 用户点击了“确定”按钮
+      send('reset');   disBtn(this);  alert("重置中,10秒后重新配网。") 
+    } else {
+      // 用户点击了“取消”按钮
+    }
+  });
+  
+
+  /*通用部分*/
+  //禁用按钮
+  function disBtn(obj){
+    obj.disabled = true;
+    obj.classList.add("button-dis");
+    obj.classList.remove("button-on");
+    obj.classList.remove("button-red");
+  }
+
+
+});
+
+//删除规则
+function ruleDel(i){
+  if (confirm("是否删除该规则？")) {
+    obj("rule"+i).remove();
+  }
+}
+</script>
   </body>
 </html>
