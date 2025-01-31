@@ -65,7 +65,7 @@ input[type=submit]:hover {
 }
 
 input[type=text], input[type=number], select {
-  width: 60%;
+  width: 160px;
   padding: 4px 4px;
   margin: 18px;
   display: inline-block;
@@ -91,7 +91,7 @@ button {
   padding: 15px 32px;
   text-align: center;
   font-size: 16px;
-  width: 100px;
+  width: 128px;
   border-radius: 4px;
   transition-duration: 0.4s;
 }
@@ -101,17 +101,90 @@ button {
 .button-on:hover {
   background-color: #1282A2;
 }
-
-.button-off {
-  background-color: #858585;
-}
-.button-off:hover {
-  background-color: #252524;
-}  
-
 .button-red {
   background-color: #ff0000;
 }
 .button-red:hover {
-  background-color: #ff00ff;
-} 
+  background-color: #ff8040;
+}
+
+.button-core {
+  background-color: #ff8040;
+}
+.button-core:hover {
+  background-color: #ff0000;
+}
+
+
+.button-dis {
+  background-color: #c0c0c0;
+}
+
+/*开关效果*/
+/* switch box  */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* 隐藏默认 checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 开关 */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+/* 过渡 */
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+/* 改变颜色 */
+input:checked + .slider {
+  background-color: #034078;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+/* 中心原点运动 */
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* 圆角 */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.colGreen{
+  color: green;
+}

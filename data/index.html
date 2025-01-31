@@ -9,17 +9,15 @@
   </head>
   <body>
     <div class="topnav">
-      <h1 id="btnOTA">%BOARD% 桌面像素摆件 2.0.1</h1>
+      <h1 id="btnOTA"><!--%BOARD% -->桌面像素摆件 2.0.1</h1>
     </div>
     <div class="content">
       <div class="card-grid">
         <div class="card">
-        <p class="card-title"><i class="fas fa-lightbulb"></i> 各项设置【像素灯接<font color="red">D2</font>，DHT11接<font color="red">D5</font>】</p>
+        <p class="card-title"><i class="fas fa-lightbulb"></i> 各项设置【像素灯<font color="red">D2</font>，DHT11<font color="red">D5</font>】</p>
             <p>
-              <div style="text-align: right;">灯珠类型<input type="text" id ="mType"      name="mType"    value="%mType%"></div>
-              <div style="text-align: right;">目前有1、2 两种&nbsp;</div>
-              <div style="text-align: right;">灯珠亮度<input type="text" id ="intBright" name="intBright" value="%intBright%"></div>
-              <div style="text-align: right;">1-255&nbsp;</div>
+              <div style="text-align: right;">灯珠类型(1或者2)<input type="text" id ="mType"      name="mType"    value="%mType%"></div>
+              <div style="text-align: right;">灯珠亮度（1-255)<input type="text" id ="intBright" name="intBright" value="%intBright%"></div>
               <div style="text-align: right;">和风天气API私钥<input type="text" id ="wUserKey"  name="wUserKey"  value="%wUserKey%"></div>
               <div style="text-align: right;"><a href="https://dev.qweather.com/docs/start/" target="_blank">https://dev.qweather.com/docs/start/</a>&nbsp;</div>
               <div style="text-align: right;">和风天气城市代码<input type="text" id ="wLocation" name="wLocation" value="%wLocation%"></div>
@@ -35,7 +33,7 @@
                   <span class="slider"></span>
                 </label>
                 
-                显示时间<input type="text" id ="secDate"  name="secDate"  style="width:60px" value="%secDate%">秒&nbsp;
+                持续时间<input type="text" id ="secDate"  name="secDate"  style="width:40px" value="%secDate%">秒&nbsp;
               </div>
               
               <div style="text-align: right;">
@@ -45,7 +43,7 @@
                   <input type="checkbox" id="chkB" >
                   <span class="slider"></span>
                 </label>
-                显示时间<input type="text" id ="secB"  name="secB"  style="width:60px" value="%secB%">秒&nbsp;
+                持续时间<input type="text" id ="secB"  name="secB"  style="width:40px" value="%secB%">秒&nbsp;
               </div>
                 
               <div style="text-align: right;">
@@ -55,7 +53,7 @@
                   <input type="checkbox" id="chkTemp" >
                   <span class="slider"></span>
                 </label>
-                显示时间<input type="text" id ="secTemp"  name="secTemp"  style="width:60px" value="%secTemp%">秒&nbsp;
+                持续时间<input type="text" id ="secTemp"  name="secTemp"  style="width:40px" value="%secTemp%">秒&nbsp;
               </div>
                 
               <button class="button-on" id="btnSave">提交</button>
@@ -77,18 +75,14 @@
 
       <div class="card-grid">
         <div class="card">
-        <p class="card-title"><i class="fas fa-lightbulb"></i> 调试区
-          <button type="button" class="button-on" id="btnClear">清理</button>
-
-      
-              <i class="fas fa-lightbulb"></i> 主板灯(GPIO 2)
+        <p class="card-title"><i class="fas fa-lightbulb"></i>
+          <button type="button" class="button-on" id="btnClear">清理调试</button>
+              <i class="fas fa-lightbulb"></i>主板灯(GPIO <font color="red">2</font>)
                 <!-- 圆形开关 -->
                 <label class="switch">
                   <input type="checkbox" id="chkled" >
                   <span class="slider"></span>
                 </label>
-              
-
           <div style="display:none1;overflow-y: auto;flex: 1;height:200px;text-align:left;background-color:#ccc" id="mmo"></div>
         </p>
         </div>
@@ -98,13 +92,12 @@
       <div class="card-grid" style="display:none" id="divOTA">
         <div class="card">
           <p class="card-title"><i class="fas fa-lightbulb"></i> MQTT设置 </p>
-
           <p>
-            <div style="text-align: right;">IP/URL<input type="text" id ="mqtt_server"  name="mqtt_server"  value="%mqtt_server%"></div>
-            <div style="text-align: right;">端口  <input type="text" id ="mqtt_port"    name="mqtt_port"    value="%mqtt_port%"></div>
-            <div style="text-align: right;">账号  <input type="text" id ="mqtt_user"    name="mqtt_user"    value="%mqtt_user%"></div>
-            <div style="text-align: right;">密码  <input type="text" id ="mqtt_pass"    name="mqtt_pass"    value="%mqtt_pass%"></div>
-            <div style="text-align: right;">设备编号 MQTT (可不唯一)<input type="text" id ="checkid"      name="checkid"    value="%checkid%"></div>
+            <div style="text-align: right;">IP/URL<input type="text"         id ="mqtt_server"  name="mqtt_server" value="%mqtt_server%"></div>
+            <div style="text-align: right;">端口  <input type="text"         id ="mqtt_port"    name="mqtt_port"    value="%mqtt_port%"></div>
+            <div style="text-align: right;">账号  <input type="text"         id ="mqtt_user"    name="mqtt_user"    value="%mqtt_user%"></div>
+            <div style="text-align: right;">密码  <input type="text"         id ="mqtt_pass"    name="mqtt_pass"    value="%mqtt_pass%"></div>
+            <div style="text-align: right;">编号 (可不唯一)<input type="text" id ="checkid"      name="checkid"      value="%checkid%"></div>
             <button class="button-on" id="btnCheckid"  style="width:256px;">更新(需重启生效)</button>
           </p>
         </div>
@@ -119,13 +112,12 @@
           <p class="card-title"><i class="fas fa-lightbulb"></i>OTA(点击就开始更新，不提示，先更新界面，再更新内核。)</p>
           <p>
             <button class="button-on"   id="btnAutofs">界面</button>
-            <button class="button-core" id="btnAuto">内核</button>
-            <button class="button-red"  id="btnReset" style="width:128px;">重新配网</button>
+            <button class="button-core" id="btnAuto"  >内核</button>
+            <button class="button-red"  id="btnReset" >重新配网</button>
             <button class="button-red"  id="btnReboot">重启</button>
           </p>
         </div>
       </div>
-      
       
     </div>
     

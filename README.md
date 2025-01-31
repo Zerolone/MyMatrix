@@ -33,6 +33,6 @@ esptool --chip esp8266 --port COM5 --baud 115200 --before default_reset --after 
 
 -------
 git add .
-git commit -m "2025-01-31 websocket改成EventSource"
+git commit -m "将websocket改成EventSource，这样ios手机可以访问，稍微web页面的文字，方便小屏幕"
 git push
 

@@ -280,7 +280,7 @@ void setup() {
           strTmp    = request->arg("c");
           
           sinfo(strTmp);
-          esend("post succ");
+          //esend("post succ");
 
           //切开|
           String input = String(strTmp);
@@ -344,7 +344,7 @@ void setup() {
           //led 内置灯
           if(strMode == "led"){
             isHas = 1; switchTest(PIN_LED, parts[1]);
-            //events.send("led|" + parts[1]);
+            esend("led|" + parts[1]);
           }
           
           //是否显示日期、b站、日期
@@ -397,7 +397,7 @@ void setup() {
           //
           strTmp = "功能未命中";
           if(isHas == 1) strTmp = "功能命中";
-          esend(strTmp);
+          //esend(strTmp);
           //结束
 
           // 发送响应
